@@ -1,38 +1,40 @@
 #!/bin/bash
 # ===============================================
-# SPLAT Compiler Runner Script
-# For Java 17 — compiles and runs SplatTester.java
+# SPLAT Compiler Runner Script (Java 8 compatible)
+# Compiles with Java 17 but targets Java 8
 # ===============================================
 
-set -e  # exit immediately on error
+set -e
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SRC_DIR="$ROOT_DIR/src"
 OUT_DIR="$ROOT_DIR/out"
 
-echo "🔨 Building SPLAT compiler project..."
+echo "Building SPLAT compiler project (target: Java 8)..."
 echo "--------------------------------------"
 
-# Clean old compiled files
+# Clean previous build
 if [ -d "$OUT_DIR" ]; then
-  echo "🧹 Cleaning previous build..."
+  echo "Cleaning previous build..."
   rm -rf "$OUT_DIR"
 fi
-
 mkdir -p "$OUT_DIR"
 
 # Compile all Java sources recursively
-echo "📦 Compiling sources..."
+echo "Compiling sources (Java 8 target)..."
 find "$SRC_DIR" -name "*.java" > sources.txt
-javac -d "$OUT_DIR" @sources.txt
-rm sources.txt
 
-echo "✅ Compilation successful!"
+# Prefer --release 8 when available
+if javac --release 8 -d "$OUT_DIR" @sources.txt 2>/dev/null; then
+  echo "Compilation successful (Java 8 target)."
+else
+  echo "Falling back to -source/-target 8..."
+  javac -source 8 -target 8 -d "$OUT_DIR" @sources.txt
+  echo "Compilation successful (Java 8 target)."
+fi
+
+rm sources.txt
 echo
 
 # Run the SplatTester main class
-echo "🚀 Running SplatTester..."
+echo "Running SplatTester..."
 java -cp "$OUT_DIR" splat.SplatTester
-
-# Optional cleanup (uncomment if you want auto-clean after running)
-echo "🧽 Cleaning up compiled files..."
-rm -rf "$OUT_DIR"
