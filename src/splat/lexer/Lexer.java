@@ -108,11 +108,6 @@ public class Lexer {
             advance();
         }
 
-        // Disallow letters immediately after digits
-        if (!eof && (Character.isLetter((char) currByte) || currByte == '_')) {
-            throw new LexException("Invalid numeric literal", line, column);
-        }
-
         return new Token(sb.toString(), line, startCol);
     }
 
