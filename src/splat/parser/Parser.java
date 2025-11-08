@@ -218,6 +218,7 @@ public class Parser {
 
         FunctionDecl funcDecl = new FunctionDecl(
                 funcLabelTok,
+                funcLabelTok.getValue(),
                 params,
                 returnTypeTok.getValue(),
                 localVarDecls,
