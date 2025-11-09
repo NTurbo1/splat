@@ -241,7 +241,9 @@ public class  SplatTester {
 				System.out.println();
 			}
 		}
-				printOutput(progOutput); // TODO: Remove this later!!!
+
+        // UNCOMMENT THIS ONLY FOR DEBUGGING!
+	    // printOutput(progOutput);
 
 	}
 

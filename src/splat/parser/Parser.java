@@ -6,7 +6,6 @@ import java.util.List;
 import splat.lexer.Token;
 import splat.parser.elements.*;
 import splat.lang.Operations;
-import splat.lang.Types;
 import splat.lang.Keywords;
 
 public class Parser {
@@ -153,14 +152,14 @@ public class Parser {
         }
 
         Token typeTok = tokens.remove(0);
-        Types.verifyVarType(typeTok);
+        Type type = Type.getVarType(typeTok);
 
         Token endSemiCol = tokens.remove(0);
         if (!endSemiCol.getValue().equals(";")) {
             throw new ParseException("Expected ';' after variable declaration.", endSemiCol);
         }
 
-        VariableDecl varDecl = new VariableDecl(varLabelTok, varLabelTok.getValue(), typeTok.getValue());
+        VariableDecl varDecl = new VariableDecl(varLabelTok, varLabelTok.getValue(), type);
 
         return varDecl;
 	}
@@ -193,7 +192,7 @@ public class Parser {
         }
 
         Token returnTypeTok = tokens.remove(0);
-        Types.verifyFuncReturnType(returnTypeTok);
+        Type type = Type.getFuncReturnType(returnTypeTok);
 
         Token isKeyword = tokens.remove(0);
         if (!isKeyword.getValue().equals("is")) {
@@ -205,6 +204,7 @@ public class Parser {
         checkNext("begin");
 
         List<Statement> statements = parseStmts();
+        setFuncLabelForStmts(statements, funcLabelTok.getValue());
 
         Token endTok = tokens.remove(0);
         if (!endTok.getValue().equals("end")) {
@@ -220,7 +220,7 @@ public class Parser {
                 funcLabelTok,
                 funcLabelTok.getValue(),
                 params,
-                returnTypeTok.getValue(),
+                type,
                 localVarDecls,
                 statements);
 
@@ -242,10 +242,9 @@ public class Parser {
         }
 
         Token typeTok = tokens.remove(0);
-        Types.verifyVarType(typeTok);
+        Type type = Type.getVarType(typeTok);
 
-        FuncParamDecl paramDecl = new FuncParamDecl(
-                paramLabelTok, paramLabelTok.getValue(), typeTok.getValue());
+        FuncParamDecl paramDecl = new FuncParamDecl(paramLabelTok, paramLabelTok.getValue(), type);
 
         return paramDecl;
     }
@@ -465,7 +464,7 @@ public class Parser {
         if (peekNext("(")) { // operation expression
             Token tok = tokens.get(1);
             String tokValue = tok.getValue();
-            if (Operations.UNARY_OPERATORS.values().contains(tokValue)) {
+            if (Operations.UNARY_OPERATORS.contains(tokValue)) {
                 return parseUnaryOpExpression();
             }
 
@@ -520,7 +519,7 @@ public class Parser {
         Expression leftExpr = parseExpression();
         Token opTok = tokens.remove(0);
         String operator = opTok.getValue();
-        if (!Operations.BINARY_OPERATORS.values().contains(operator)) {
+        if (!Operations.BINARY_OPERATORS.contains(operator)) {
             throw new ParseException("Unknown binary operator: " + operator, opTok);
         }
         Expression rightExpr = parseExpression();
@@ -549,7 +548,7 @@ public class Parser {
 
         Token opTok = tokens.remove(0);
         String operator = opTok.getValue();
-        if (!Operations.UNARY_OPERATORS.values().contains(operator)) {
+        if (!Operations.UNARY_OPERATORS.contains(operator)) {
             throw new ParseException("Unknown unary operator: " + operator, opTok);
         }
         Expression rightExpr = parseExpression();
@@ -627,6 +626,26 @@ public class Parser {
         }
         if (Keywords.RESERVED_WORDS.contains(tokValue)) {
             throw new ParseException("Reserved word " + tokValue + " can't be used as a label!", tok);
+        }
+    }
+
+    private void setFuncLabelForStmts(List<Statement> stmts, String funcLabel) {
+        for (Statement st : stmts) {
+            if (st instanceof WhileLoopStatement) {
+                WhileLoopStatement whileLoopStmt = (WhileLoopStatement) st;
+                whileLoopStmt.setFuncLabel(funcLabel);
+                setFuncLabelForStmts(whileLoopStmt.getStmts(), funcLabel);
+            } else if (st instanceof IfElseStatement) {
+                IfElseStatement ifElseStmt = (IfElseStatement) st;
+                ifElseStmt.setFuncLabel(funcLabel);
+                setFuncLabelForStmts(ifElseStmt.getStmts(), funcLabel);
+
+                if (ifElseStmt.getElseStmts() != null) {
+                    setFuncLabelForStmts(ifElseStmt.getElseStmts(), funcLabel);
+                }
+            } else {
+                st.setFuncLabel(funcLabel);
+            }
         }
     }
 }

@@ -1,6 +1,9 @@
 package splat.parser.elements;
 
+import java.util.Map;
+
 import splat.lexer.Token;
+import splat.semanticanalyzer.SemanticAnalysisException;
 
 public class PrintStatement extends Statement {
     private Expression expr;
@@ -8,6 +11,16 @@ public class PrintStatement extends Statement {
     public PrintStatement(Token tok, Expression expr) {
         super(tok);
         this.expr = expr;
+    }
+
+    @Override
+    public void analyze(Map<String, FunctionDecl> funcMap, Map<String, Type> varAndParamMap)
+        throws SemanticAnalysisException
+    {
+        // Well, seems like you can print any type to the console...
+        //
+        // BUT ANALYZE THE EXPRESSION ANYWAY FOR OTHER SEMATIC RULES! We just don't care about the type!
+        this.expr.analyzeAndGetType(funcMap, varAndParamMap);
     }
 
     public Expression getExpr() {

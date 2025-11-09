@@ -1,6 +1,10 @@
 package splat.parser.elements;
 
+import java.util.Map;
+
 import splat.lexer.Token;
+import splat.lang.Operations;
+import splat.semanticanalyzer.SemanticAnalysisException;
 
 public class UnaryOpExpression extends Expression {
     private Expression rightExpr;
@@ -10,6 +14,14 @@ public class UnaryOpExpression extends Expression {
         super(tok);
         this.rightExpr = rightExpr;
         this.operator = unaryOp;
+    }
+    
+    @Override
+    public Type analyzeAndGetType(Map<String, FunctionDecl> funcMap, Map<String, Type> varAndParamMap) 
+        throws SemanticAnalysisException
+    {
+        Type type = this.rightExpr.analyzeAndGetType(funcMap, varAndParamMap);
+        return Operations.verifyUnaryOperation(type, this);
     }
 
     public Expression getRightExpr() {

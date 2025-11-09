@@ -4,24 +4,18 @@ import splat.lexer.Token;
 
 public class VariableDecl extends Declaration {
 
-    private String label;
-    private String type;
+    private Type type;
 	
-	public VariableDecl(Token tok, String label, String type) {
-		super(tok);
-        this.label = label;
+	public VariableDecl(Token tok, String label, Type type) {
+		super(tok, label);
         this.type = type;
 	}
 
-    public String getLabel() {
-        return this.label;
-    }
-
-    public String getType() {
+    public Type getType() {
         return this.type;
     }
 	
 	public String toString() {
-		return "{label: " + label + ", type: " + type + "}";
+        return this.getLabel() + ": " + this.type;
 	}
 }

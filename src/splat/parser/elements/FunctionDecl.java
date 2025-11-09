@@ -6,9 +6,8 @@ import splat.lexer.Token;
 
 public class FunctionDecl extends Declaration {
 
-    private String label;
     private List<FuncParamDecl> params;
-    private String returnType;
+    private Type returnType;
     private List<VariableDecl> localVarDecls;
     private List<Statement> statements;
 	
@@ -16,21 +15,16 @@ public class FunctionDecl extends Declaration {
             Token tok,
             String label,
             List<FuncParamDecl> params,
-            String returnType,
+            Type returnType,
             List<VariableDecl> localVarDecls,
             List<Statement> statements
     ) {
-		super(tok);
-        this.label = label;
+		super(tok, label);
         this.params = params;
         this.returnType = returnType;
         this.localVarDecls = localVarDecls;
         this.statements = statements;
 	}
-
-    public String getLabel() {
-        return this.label;
-    }
 
     public List<FuncParamDecl> getParams() {
         return this.params;
@@ -40,17 +34,35 @@ public class FunctionDecl extends Declaration {
         return this.localVarDecls;
     }
 
-    public List<Statement> getStatements() {
+    public List<Statement> getStmts() {
         return this.statements;
     }
 
-    public String getReturnType() {
+    public Type getReturnType() {
         return this.returnType;
     }
 	
-	public String toString() {
-		return "{params: " + this.params.toString() + ", returnType: " + this.returnType +
-            ", localVarDecls: " + this.localVarDecls.toString() + ", statements: " + 
-            this.statements.toString();
+    @Override
+	public String toString() 
+    {
+        StringBuilder funcDeclSB = new StringBuilder();
+        funcDeclSB.append(this.getLabel());
+        funcDeclSB.append("(");
+
+        StringBuilder paramsSB = new StringBuilder();
+        for (int i = 0; i < params.size(); i++) {
+            if (i > 0) {
+                paramsSB.append(", ");
+            }
+            paramsSB.append(params.get(i).toString());
+        }
+        String paramsStr = paramsSB.toString();
+
+        funcDeclSB.append(paramsStr);
+        funcDeclSB.append("): ");
+        funcDeclSB.append(this.returnType.toString());
+        funcDeclSB.append(";");
+
+        return funcDeclSB.toString();
 	}
 }

@@ -1,6 +1,9 @@
 package splat.parser.elements;
 
+import java.util.Map;
+
 import splat.lexer.Token;
+import splat.semanticanalyzer.SemanticAnalysisException;
 
 public class LabelAssignmentStatement extends Statement {
     private String label;
@@ -10,6 +13,23 @@ public class LabelAssignmentStatement extends Statement {
         super(tok);
         this.label = label;
         this.expr = expr;
+    }
+
+    @Override
+    public void analyze(Map<String, FunctionDecl> funcMap, Map<String, Type> varAndParamMap)
+        throws SemanticAnalysisException
+    {
+        Type LHSType = varAndParamMap.get(this.label);
+        if (LHSType == null) {
+            throw new SemanticAnalysisException(
+                    "Can't assign to a variable '" + this.label + "' that is not declared!", this);
+        }
+
+        Type RHSType = this.expr.analyzeAndGetType(funcMap, varAndParamMap);
+        if (LHSType != RHSType) {
+            throw new SemanticAnalysisException(
+                    "Can't assign '" + RHSType + "' type to '" + LHSType + "' type!", this.expr);
+        }
     }
 
     public Expression getExpr() {

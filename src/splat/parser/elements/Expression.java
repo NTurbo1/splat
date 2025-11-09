@@ -1,10 +1,13 @@
 package splat.parser.elements;
 
+import java.util.Map;
+
 import splat.lexer.Token;
+import splat.semanticanalyzer.SemanticAnalysisException;
 
 public abstract class Expression extends ASTElement {
 
-	public Expression(Token tok) {
+    public Expression(Token tok) {
 		super(tok);
 	}
 
@@ -26,9 +29,10 @@ public abstract class Expression extends ASTElement {
 	 * varAndParamMap is needed in case this expression or a sub-expression
 	 * contains variables or parameters -- we use this map to keep track of
 	 * what items are currently in scope, and what their types are
-	 */
-//	 public abstract Type analyzeAndGetType(Map<String, FunctionDecl> funcMap,
-//	                                        Map<String, Type> varAndParamMap);
+     * */
+    public abstract Type analyzeAndGetType(
+            Map<String, FunctionDecl> funcMap, Map<String, Type> varAndParamMap
+        ) throws SemanticAnalysisException;
 	
 	/**
 	 * This will be needed for Phase 4 - this abstract method will need to be

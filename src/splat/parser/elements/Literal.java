@@ -4,11 +4,14 @@ import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 import splat.lexer.Token;
 import splat.parser.ParseException;
+import splat.semanticanalyzer.SemanticAnalysisException;
 
 public class Literal extends Expression {
+    private Type type;
     private String value;
 
     public static final List<String> BOOLEAN_LITERALS = Collections.unmodifiableList(
@@ -21,13 +24,23 @@ public class Literal extends Expression {
         char firstChar = tok.getValue().charAt(0);
         if (firstChar == '"') { // string literal start
             verifyStringLiteral(tok);
+            this.type = Type.STRING;
         } else if (Character.isDigit(firstChar)) { // integer literal start
             verifyIntegerLiteral(tok);
+            this.type = Type.INTEGER;
         } else {
             verifyBooleanLiteral(tok);
+            this.type = Type.BOOLEAN;
         }
 
         this.value = tok.getValue();
+    }
+    
+    @Override
+    public Type analyzeAndGetType(Map<String, FunctionDecl> funcMap, Map<String, Type> varAndParamMap) 
+        throws SemanticAnalysisException
+    {
+        return this.type;
     }
 
     public static void verifyIntegerLiteral(Token tok) throws ParseException {

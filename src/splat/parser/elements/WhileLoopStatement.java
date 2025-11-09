@@ -1,8 +1,10 @@
 package splat.parser.elements;
 
 import java.util.List;
+import java.util.Map;
 
 import splat.lexer.Token;
+import splat.semanticanalyzer.SemanticAnalysisException;
 
 public class WhileLoopStatement extends Statement {
     private Expression expr;
@@ -12,6 +14,21 @@ public class WhileLoopStatement extends Statement {
         super(tok);
         this.expr = expr;
         this.stmts = stmts;
+    }
+
+    @Override
+    public void analyze(Map<String, FunctionDecl> funcMap, Map<String, Type> varAndParamMap)
+        throws SemanticAnalysisException
+    {
+        Type exprType = this.expr.analyzeAndGetType(funcMap, varAndParamMap);
+        if (exprType != Type.BOOLEAN) {
+            throw new SemanticAnalysisException(
+                    "While-loop statement expression should return a boolean type value.", this.expr);
+        }
+
+        for (Statement stmt : this.stmts) {
+            stmt.analyze(funcMap, varAndParamMap);
+        }
     }
 
     public Expression getExpr() {
