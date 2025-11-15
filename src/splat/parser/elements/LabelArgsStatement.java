@@ -67,6 +67,15 @@ public class LabelArgsStatement extends Statement {
             );
         }
 
+        Type funcReturnType = funcDecl.getReturnType();
+        if (funcReturnType != Type.VOID)
+        {
+            throw new ExecutionException(
+                "Functions of function call statements must have a declared return type of 'void'!", 
+                this
+            );
+        }
+
         List<FuncParamDecl> funcParams = funcDecl.getParams();
         if (funcParams != null)
         {
@@ -84,23 +93,23 @@ public class LabelArgsStatement extends Statement {
         if (funcStmts != null)
         {
             for (Statement stmt : funcStmts) {
-                stmt.execute(funcMap, varAndParamMap);
+                try {
+                    stmt.execute(funcMap, varAndParamMap);
+                } catch (ReturnFromCall rfc) {
+                    if (rfc.getReturnVal() != null) // non void return statement
+                    {
+                        throw new ExecutionException(
+                            "Returning a value from a function with return type of 'void'!" + 
+                            "Probably your semantic analyzer missed it. Ehh... Go fix it!",
+                            stmt
+                        );
+                    }
+                    Executor.removeFuncArgsAndLocalVarsFrom(varAndParamMap, funcDecl);
+                }
             }
         }
 
         Executor.removeFuncArgsAndLocalVarsFrom(varAndParamMap, funcDecl);
-
-        Type funcReturnType = funcDecl.getReturnType();
-        if (funcReturnType == Type.VOID)
-        {
-            throw new ReturnFromCall(null);
-        }
-
-        throw new ExecutionException(
-            "Nothing is returned from a function call with return type '" + funcReturnType.toString() +
-            "'! Ehh...", 
-            this
-        );
     }
 
     public List<Expression> getArgs() {
