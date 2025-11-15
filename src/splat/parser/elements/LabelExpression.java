@@ -31,8 +31,16 @@ public class LabelExpression extends Expression {
     public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ExecutionException
     {
-        // FIXME: IMPLEMENT!
-        return null;
+        Value value = varAndParamMap.get(this.value);
+        if (value == null) {
+            throw new ExecutionException(
+                "Undefined variable detected during execution: " + this.value + 
+                ". Sigh... go check your semantic analyzer, alright?! Just check it...",
+                this
+            );
+        }
+
+        return value;
     }
 
     public String getValue() {
