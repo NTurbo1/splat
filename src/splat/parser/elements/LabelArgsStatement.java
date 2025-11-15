@@ -8,6 +8,7 @@ import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.ReturnFromCall;
 import splat.executor.ExecutionException;
 import splat.executor.Value;
+import splat.executor.Executor;
 
 public class LabelArgsStatement extends Statement {
     private String label;
@@ -56,7 +57,37 @@ public class LabelArgsStatement extends Statement {
     public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ReturnFromCall, ExecutionException
     {
-        // FIXME: IMPLEMENT!
+        FunctionDecl funcDecl = funcMap.get(this.label);
+        if (funcDecl == null)
+        {
+            throw new ExecutionException("Dude, this function " + funcDecl.toString() + 
+                " is not even declared! Your semantic analyzer is FUCKED UP!", 
+                this
+            );
+        }
+
+        List<FuncParamDecl> funcParams = funcDecl.getParams();
+        if (funcParams != null)
+        {
+            // Add function arguments to the varAndParamMap so that they're accessible to the statements
+            // and expressions in the function body. We'll remove them later before returning from a 
+            // function. 
+            for (int i = 0; i < funcParams.size(); i++)
+            {
+                Value argVal = this.args.get(i).evaluate(funcMap, varAndParamMap);
+                varAndParamMap.put(funcParams.get(i).getLabel(), argVal);
+            }
+        }
+
+        List<Statement> funcStmts = funcDecl.getStmts();
+        if (funcStmts != null)
+        {
+            for (Statement stmt : funcStmts) {
+                stmt.execute(funcMap, varAndParamMap);
+            }
+        }
+
+        Executor.removeFuncArgsAndLocalVarsFrom(varAndParamMap, funcDecl);
     }
 
     public List<Expression> getArgs() {

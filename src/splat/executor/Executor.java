@@ -2,8 +2,10 @@ package splat.executor;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 import splat.parser.elements.FunctionDecl;
+import splat.parser.elements.FuncParamDecl;
 import splat.parser.elements.VariableDecl;
 import splat.parser.elements.ProgramAST;
 import splat.parser.elements.Statement;
@@ -61,30 +63,48 @@ public class Executor {
 				
 			} else if (decl instanceof VariableDecl) {
 				VariableDecl varDecl = (VariableDecl)decl;
-                Type varType = varDecl.getType();
-
-                Value varVal;
-                switch (varType)
-                {
-                    case BOOLEAN:
-                        varVal = new BoolValue(false);
-                        break;
-                    case STRING:
-                        varVal = new StringValue("");
-                        break;
-                    case INTEGER:
-                        varVal = new IntegerValue(0);
-                        break;
-                    default:
-                        throw new ExecutionException(
-                            "Unknown type detected during execution: " + varType + 
-                            "WTF did your semantic analyzer do???", decl
-                        );
-                }
-
+                Value varVal = returnZeroValueOf(varDecl);
 				progVarMap.put(label, varVal);
 			}
 		}
 	}
 
+    public static final Value returnZeroValueOf(VariableDecl varDecl) throws ExecutionException
+    {
+        Type varType = varDecl.getType();
+        switch (varType)
+        {
+            case BOOLEAN:
+                return new BoolValue(false);
+            case STRING:
+                return new StringValue("");
+            case INTEGER:
+                return new IntegerValue(0);
+            default:
+                throw new ExecutionException(
+                    "Unknown type detected during execution: " + varType + 
+                    "WTF did your semantic analyzer do???", varDecl
+                );
+        }
+    }
+
+    public static final void removeFuncArgsAndLocalVarsFrom(
+        Map<String, Value> varAndParamMap, FunctionDecl funcDecl
+    ) {
+        if (funcDecl == null) { return; }
+
+        List<FuncParamDecl> params = funcDecl.getParams();
+        if (params == null) { return; }
+        for (FuncParamDecl param : params) 
+        {
+            varAndParamMap.remove(param.getLabel());
+        }
+
+        List<VariableDecl> localVars = funcDecl.getLocalVarDecls();
+        if (localVars == null) { return; }
+        for (VariableDecl localVar : localVars)
+        {
+            varAndParamMap.remove(localVar.getLabel());
+        }
+    }
 }
