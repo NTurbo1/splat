@@ -64,7 +64,41 @@ public class ReturnStatement extends Statement {
     public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ReturnFromCall, ExecutionException
     {
-        // FIXME: IMPLEMENT!
+        FunctionDecl funcDecl = funcMap.get(this.getFuncLabel());
+        if (funcDecl == null) 
+        {
+            throw new ExecutionException(
+                "Outside function return statement is detected! Or your semantic analyzer is FUCKED UP!", 
+                this
+            );
+        }
+
+        Type funcReturnType = funcDecl.getReturnType();
+        if (funcReturnType == null)
+        {
+            throw new ExecutionException(
+                "A function must have a return type!!! Go fix your semantic analyzer, kid!",
+                this
+            );
+        }
+
+        Value returnVal = null;
+        Type returnExprType = Type.VOID;
+        if (this.expr != null) {
+            returnVal = this.expr.evaluate(funcMap, varAndParamMap);
+            returnExprType = returnVal.getType();
+        }
+
+        if (funcReturnType != returnExprType)
+        {
+            throw new ExecutionException(
+                "The return value type '" + returnExprType + 
+                "' doesn't match the function return type '" + funcReturnType + "'",
+                this
+            );
+        }
+
+        throw new ReturnFromCall(returnVal);
     }
 
     public Expression getExpr() {
