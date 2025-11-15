@@ -39,7 +39,28 @@ public class LabelAssignmentStatement extends Statement {
     public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ReturnFromCall, ExecutionException
     {
-        // FIXME: IMPLEMENT!
+        FunctionDecl funcDecl = funcMap.get(this.label);
+        if (funcDecl != null)
+        {
+            throw new ExecutionException(
+                "Sorry, dude, SPLAT doesn't support functional programming! Can't assign to a function " +
+                "label '" + this.label + "'. Yeah, I know... it fucking sucks...", 
+                this
+            );
+        }
+
+        Value varVal = varAndParamMap.get(this.label);
+        if (varVal == null)
+        {
+            throw new ExecutionException(
+                "WTF, dude??? Nothing found with the label '" + this.label + 
+                "'! Your semantic analyzer is FUCKED UP! GO FIX IT!!!",
+                this
+            );
+        }
+
+        Value newVarVal = this.expr.evaluate(funcMap, varAndParamMap);
+        varAndParamMap.put(this.label, newVarVal);
     }
 
     public Expression getExpr() {

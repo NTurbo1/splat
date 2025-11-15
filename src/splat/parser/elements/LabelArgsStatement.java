@@ -89,6 +89,18 @@ public class LabelArgsStatement extends Statement {
         }
 
         Executor.removeFuncArgsAndLocalVarsFrom(varAndParamMap, funcDecl);
+
+        Type funcReturnType = funcDecl.getReturnType();
+        if (funcReturnType == Type.VOID)
+        {
+            throw new ReturnFromCall(null);
+        }
+
+        throw new ExecutionException(
+            "Nothing is returned from a function call with return type '" + funcReturnType.toString() +
+            "'! Ehh...", 
+            this
+        );
     }
 
     public List<Expression> getArgs() {
