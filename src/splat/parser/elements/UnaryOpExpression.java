@@ -6,6 +6,8 @@ import splat.lexer.Token;
 import splat.lang.Operations;
 import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.Value;
+import splat.executor.BoolValue;
+import splat.executor.IntegerValue;
 import splat.executor.ExecutionException;
 
 public class UnaryOpExpression extends Expression {
@@ -30,8 +32,20 @@ public class UnaryOpExpression extends Expression {
     public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ExecutionException
     {
-        // FIXME: IMPLEMENT!
-        return null;
+        Value rightVal = this.rightExpr.evaluate(funcMap, varAndParamMap);
+
+        if (this.operator.equals("not"))
+        {
+            boolean res = !((BoolValue) rightVal).getValue();
+            return new BoolValue(res);
+        }
+        if (this.operator.equals("-"))
+        {
+            int res = -((IntegerValue) rightVal).getValue();
+            return new IntegerValue(res);
+        }
+
+        throw new ExecutionException("Unknown unary operator: " + this.operator, this);
     }
 
     public Expression getRightExpr() {
