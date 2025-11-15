@@ -7,6 +7,8 @@ import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.Value;
 import splat.executor.ExecutionException;
+import splat.executor.ReturnFromCall;
+import splat.executor.Executor;
 
 /**
  * A function call expression ::= <label> ( <args> )
@@ -62,8 +64,53 @@ public class LabelArgsExpression extends Expression {
     public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ExecutionException
     {
-        // FIXME: IMPLEMENT!
-        return null;
+        FunctionDecl funcDecl = funcMap.get(this.label);
+        if (funcDecl == null)
+        {
+            throw new ExecutionException("Dude, this function " + funcDecl.toString() + 
+                " is not even declared! Your semantic analyzer is FUCKED UP!", 
+                this
+            );
+        }
+
+        List<FuncParamDecl> funcParams = funcDecl.getParams();
+        if (funcParams != null)
+        {
+            // Add function arguments to the varAndParamMap so that they're accessible to the statements
+            // and expressions in the function body. We'll remove them later before returning from a 
+            // function. 
+            for (int i = 0; i < funcParams.size(); i++)
+            {
+                Value argVal = this.args.get(i).evaluate(funcMap, varAndParamMap);
+                varAndParamMap.put(funcParams.get(i).getLabel(), argVal);
+            }
+        }
+
+        List<Statement> funcStmts = funcDecl.getStmts();
+        if (funcStmts != null)
+        {
+            try {
+                for (Statement stmt : funcStmts) {
+                    stmt.execute(funcMap, varAndParamMap);
+                }
+            } catch (ReturnFromCall rfc) {
+                return rfc.getReturnVal();
+            }
+        }
+
+        Executor.removeFuncArgsAndLocalVarsFrom(varAndParamMap, funcDecl);
+
+        Type funcReturnType = funcDecl.getReturnType();
+        if (funcReturnType == Type.VOID)
+        {
+            return null;
+        }
+
+        throw new ExecutionException(
+            "Nothing is returned from a function call with return type '" + funcReturnType.toString() +
+            "'! Ehh...", 
+            this
+        );
     }
 
     public List<Expression> getArgs() {
