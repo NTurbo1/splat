@@ -105,6 +105,7 @@ public class LabelArgsStatement extends Statement {
                         );
                     }
                     Executor.removeFuncArgsAndLocalVarsFrom(varAndParamMap, funcDecl);
+                    return;
                 }
             }
         }
