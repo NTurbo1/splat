@@ -24,6 +24,6 @@ public class PrintLineStatement extends Statement {
     public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ReturnFromCall, ExecutionException
     {
-        // FIXME: IMPLEMENT!
+        System.out.println();
     }
 }
