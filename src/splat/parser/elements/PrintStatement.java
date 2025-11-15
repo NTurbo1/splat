@@ -37,8 +37,12 @@ public class PrintStatement extends Statement {
         Type valType = val.getType();
         if (valType == Type.STRING)
         {
-            StringValue strVal = (StringValue) val;
-            System.out.print(strVal.getValue());
+            String strVal = ((StringValue) val).getValue();
+            strVal = strVal.substring(1, strVal.length() - 1); // NOTE: Expected that the string literal 
+                                                               // value contains the quotations marks, ", 
+                                                               // at both ends as well. If not, you better
+                                                               // remove this line, buddy!
+            System.out.print(strVal);
         }
         else if (valType == Type.INTEGER)
         {
