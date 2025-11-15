@@ -39,27 +39,30 @@ public class WhileLoopStatement extends Statement {
     public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ReturnFromCall, ExecutionException
     {
-        Value exprVal = this.expr.evaluate(funcMap, varAndParamMap);
-        Type exprValType = exprVal.getType();
-        if (exprValType != Type.BOOLEAN)
-        {
-            throw new ExecutionException(
-                "While-loop statement expression must be 'Boolean' but got '" + exprValType + "'.",
-                this.expr
-            );
-        }
-
-        BoolValue boolVal = (BoolValue) exprVal;
-        if (boolVal.getValue())
-        {
-            if (this.stmts != null)
+        boolean exprEvaluatedToTrue = false;
+        do {
+            Value exprVal = this.expr.evaluate(funcMap, varAndParamMap);
+            Type exprValType = exprVal.getType();
+            if (exprValType != Type.BOOLEAN)
             {
-                for (Statement stmt : this.stmts)
+                throw new ExecutionException(
+                    "While-loop statement expression must be 'Boolean' but got '" + exprValType + "'.",
+                    this.expr
+                );
+            }
+
+            exprEvaluatedToTrue = ((BoolValue) exprVal).getValue();
+            if (exprEvaluatedToTrue)
+            {
+                if (this.stmts != null)
                 {
-                    stmt.execute(funcMap, varAndParamMap);
+                    for (Statement stmt : this.stmts)
+                    {
+                        stmt.execute(funcMap, varAndParamMap);
+                    }
                 }
             }
-        }
+        } while (exprEvaluatedToTrue);
     }
 
     public Expression getExpr() {
