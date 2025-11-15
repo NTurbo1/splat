@@ -8,6 +8,7 @@ import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.ReturnFromCall;
 import splat.executor.ExecutionException;
 import splat.executor.Value;
+import splat.executor.BoolValue;
 
 public class WhileLoopStatement extends Statement {
     private Expression expr;
@@ -38,7 +39,27 @@ public class WhileLoopStatement extends Statement {
     public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ReturnFromCall, ExecutionException
     {
-        // FIXME: IMPLEMENT!
+        Value exprVal = this.expr.evaluate(funcMap, varAndParamMap);
+        Type exprValType = exprVal.getType();
+        if (exprValType != Type.BOOLEAN)
+        {
+            throw new ExecutionException(
+                "While-loop statement expression must be 'Boolean' but got '" + exprValType + "'.",
+                this.expr
+            );
+        }
+
+        BoolValue boolVal = (BoolValue) exprVal;
+        if (boolVal.getValue())
+        {
+            if (this.stmts != null)
+            {
+                for (Statement stmt : this.stmts)
+                {
+                    stmt.execute(funcMap, varAndParamMap);
+                }
+            }
+        }
     }
 
     public Expression getExpr() {
