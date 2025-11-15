@@ -3,3 +3,6 @@
 
 # Compliled files directory
 out
+
+# temp files
+tests/temp-out.txt

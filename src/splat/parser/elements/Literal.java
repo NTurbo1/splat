@@ -10,6 +10,9 @@ import splat.lexer.Token;
 import splat.parser.ParseException;
 import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.Value;
+import splat.executor.StringValue;
+import splat.executor.IntegerValue;
+import splat.executor.BoolValue;
 import splat.executor.ExecutionException;
 
 public class Literal extends Expression {
@@ -49,8 +52,27 @@ public class Literal extends Expression {
     public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ExecutionException
     {
-        // FIXME: IMPLEMENT!
-        return null;
+        switch (this.type)
+        {
+            case STRING:
+                return new StringValue(this.value);
+            case INTEGER:
+                try {
+                    int res = Integer.parseInt(this.value);
+                    return new IntegerValue(res);
+                } catch (NumberFormatException ex) {
+                    throw new ExecutionException("Wrong integer format: " + this.value, this);
+                }
+            case BOOLEAN:
+                boolean res = Boolean.parseBoolean(this.value);
+                return new BoolValue(res);
+            default:
+                throw new ExecutionException(
+                    "Literal '" + this.value + "' has unknown type: " + this.type.toString() +
+                    ". Man, go fix your semantic analyzer!",
+                    this
+                );
+        }
     }
 
     public static void verifyIntegerLiteral(Token tok) throws ParseException {
