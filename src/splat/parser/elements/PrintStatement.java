@@ -7,6 +7,9 @@ import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.ReturnFromCall;
 import splat.executor.ExecutionException;
 import splat.executor.Value;
+import splat.executor.StringValue;
+import splat.executor.IntegerValue;
+import splat.executor.BoolValue;
 
 public class PrintStatement extends Statement {
     private Expression expr;
@@ -30,7 +33,31 @@ public class PrintStatement extends Statement {
     public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
         throws ReturnFromCall, ExecutionException
     {
-        // FIXME: IMPLEMENT!
+        Value val = this.expr.evaluate(funcMap, varAndParamMap);
+        Type valType = val.getType();
+        if (valType == Type.STRING)
+        {
+            StringValue strVal = (StringValue) val;
+            System.out.print(strVal.getValue());
+        }
+        else if (valType == Type.INTEGER)
+        {
+            IntegerValue intVal = (IntegerValue) val;
+            System.out.print(intVal.getValue());
+        }
+        else if (valType == Type.BOOLEAN)
+        {
+            BoolValue boolVal = (BoolValue) val;
+            System.out.print(boolVal.getValue());
+        }
+        else
+        {
+            throw new ExecutionException(
+                "Uknown type was detected during execution: " + valType.toString() +
+                ". Man, go fix your semantic analyzer!",
+                this.expr
+            );
+        }
     }
 
     public Expression getExpr() {
