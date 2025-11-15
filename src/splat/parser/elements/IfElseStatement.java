@@ -5,6 +5,10 @@ import java.util.List;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
+import splat.executor.Value;
+import splat.executor.BoolValue;
+import splat.executor.ReturnFromCall;
+import splat.executor.ExecutionException;
 
 public class IfElseStatement extends Statement {
     private Expression expr;
@@ -46,7 +50,7 @@ public class IfElseStatement extends Statement {
             if (stmt instanceof ReturnStatement) { ifStmtReturns = true; }
         }
         if (!ifStmtReturns && 
-            (this.stmts.size() > 0) && 
+            (this.stmts != null && this.stmts.size() > 0) && 
             (this.stmts.get(this.stmts.size() - 1) instanceof IfElseStatement))
             // TODO: You may want to check if the last statement is a while-loop statement and
             // that it's condition expression is always true.
@@ -63,7 +67,7 @@ public class IfElseStatement extends Statement {
             }
         }
         if (!elseStmtReturns && 
-            (this.elseStmts.size() > 0) && 
+            (this.elseStmts != null && this.elseStmts.size() > 0) && 
             (this.elseStmts.get(this.elseStmts.size() - 1) instanceof IfElseStatement))
             // TODO: You may want to check if the last statement is a while-loop statement and
             // that it's condition expression is always true.
@@ -88,6 +92,39 @@ public class IfElseStatement extends Statement {
         }
 
         this.returns = ifStmtReturns;
+    }
+
+    public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
+        throws ReturnFromCall, ExecutionException
+    {
+        Value exprValue = this.expr.evaluate(funcMap, varAndParamMap);
+        Type exprValType = exprValue.getType();
+        if (exprValType != Type.BOOLEAN) 
+        {
+            throw new ExecutionException(
+                "If-else statement expression evaluated to a value of type non-boolean: " + 
+                exprValType, this.expr
+            );
+        }
+
+        BoolValue boolVal = (BoolValue) exprValue;
+        if (boolVal.getValue()) {
+            if (this.stmts == null) {
+                return;
+            }
+            for (Statement stmt : this.stmts)
+            {
+                stmt.execute(funcMap, varAndParamMap);
+            }
+        } else {
+            if (this.elseStmts == null) {
+                return;
+            }
+            for (Statement stmt : this.elseStmts)
+            {
+                stmt.execute(funcMap, varAndParamMap);
+            }
+        }
     }
 
     public Expression getBinExpr() {

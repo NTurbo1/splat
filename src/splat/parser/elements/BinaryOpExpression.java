@@ -5,6 +5,8 @@ import java.util.Map;
 import splat.lexer.Token;
 import splat.lang.Operations;
 import splat.semanticanalyzer.SemanticAnalysisException;
+import splat.executor.Value;
+import splat.executor.ExecutionException;
 
 public class BinaryOpExpression extends Expression {
     private Expression leftExpr;
@@ -26,6 +28,14 @@ public class BinaryOpExpression extends Expression {
         Type RHSType = this.rightExpr.analyzeAndGetType(funcMap, varAndParamMap);
 
         return Operations.verifyBinaryOperation(LHSType, RHSType, this);
+    }
+
+    @Override
+    public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
+        throws ExecutionException
+    {
+        // FIXME: IMPLEMENT!
+        return null;
     }
 
     public Expression getLeftExpr() {

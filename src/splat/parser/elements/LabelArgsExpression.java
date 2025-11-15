@@ -5,6 +5,8 @@ import java.util.Map;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
+import splat.executor.Value;
+import splat.executor.ExecutionException;
 
 /**
  * A function call expression ::= <label> ( <args> )
@@ -54,6 +56,14 @@ public class LabelArgsExpression extends Expression {
         }
 
         return returnType;
+    }
+
+    @Override
+    public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
+        throws ExecutionException
+    {
+        // FIXME: IMPLEMENT!
+        return null;
     }
 
     public List<Expression> getArgs() {

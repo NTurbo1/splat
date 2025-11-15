@@ -4,6 +4,9 @@ import java.util.Map;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
+import splat.executor.ReturnFromCall;
+import splat.executor.ExecutionException;
+import splat.executor.Value;
 
 public class ReturnStatement extends Statement {
     private Expression expr;
@@ -55,6 +58,12 @@ public class ReturnStatement extends Statement {
                 }
             }
         }
+    }
+
+    public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
+        throws ReturnFromCall, ExecutionException
+    {
+        // FIXME: IMPLEMENT!
     }
 
     public Expression getExpr() {

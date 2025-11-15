@@ -9,6 +9,8 @@ import java.util.Map;
 import splat.lexer.Token;
 import splat.parser.ParseException;
 import splat.semanticanalyzer.SemanticAnalysisException;
+import splat.executor.Value;
+import splat.executor.ExecutionException;
 
 public class Literal extends Expression {
     private Type type;
@@ -41,6 +43,14 @@ public class Literal extends Expression {
         throws SemanticAnalysisException
     {
         return this.type;
+    }
+
+    @Override
+    public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
+        throws ExecutionException
+    {
+        // FIXME: IMPLEMENT!
+        return null;
     }
 
     public static void verifyIntegerLiteral(Token tok) throws ParseException {

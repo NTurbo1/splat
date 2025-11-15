@@ -9,6 +9,8 @@ import splat.lexer.Token;
 import splat.parser.Parser;
 import splat.parser.elements.ProgramAST;
 
+import splat.executor.Executor;
+
 import splat.semanticanalyzer.SemanticAnalyzer;
 
 public class Splat {
@@ -34,8 +36,8 @@ public class Splat {
 		analyzer.analyze();
 		
 		// Step 4.  Executor
-		// Executor executor = new Executor(progAST);
-		// executor.runProgram();
+		Executor executor = new Executor(progAST);
+		executor.runProgram();
 		
 		// THE END!
 	}

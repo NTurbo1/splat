@@ -4,6 +4,9 @@ import java.util.Map;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
+import splat.executor.ReturnFromCall;
+import splat.executor.ExecutionException;
+import splat.executor.Value;
 
 public class LabelAssignmentStatement extends Statement {
     private String label;
@@ -30,6 +33,12 @@ public class LabelAssignmentStatement extends Statement {
             throw new SemanticAnalysisException(
                     "Can't assign '" + RHSType + "' type to '" + LHSType + "' type!", this.expr);
         }
+    }
+
+    public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
+        throws ReturnFromCall, ExecutionException
+    {
+        // FIXME: IMPLEMENT!
     }
 
     public Expression getExpr() {

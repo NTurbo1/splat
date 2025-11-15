@@ -4,6 +4,8 @@ import java.util.Map;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
+import splat.executor.Value;
+import splat.executor.ExecutionException;
 
 public class LabelExpression extends Expression {
     private String value;
@@ -23,6 +25,14 @@ public class LabelExpression extends Expression {
         }
 
         return type;
+    }
+
+    @Override
+    public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
+        throws ExecutionException
+    {
+        // FIXME: IMPLEMENT!
+        return null;
     }
 
     public String getValue() {
