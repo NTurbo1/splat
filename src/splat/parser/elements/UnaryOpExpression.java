@@ -1,6 +1,7 @@
 package splat.parser.elements;
 
 import java.util.Map;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.lang.Operations;
@@ -9,6 +10,7 @@ import splat.executor.Value;
 import splat.executor.BoolValue;
 import splat.executor.IntegerValue;
 import splat.executor.ExecutionException;
+import splat.executor.ScopeEnvironment;
 
 public class UnaryOpExpression extends Expression {
     private Expression rightExpr;
@@ -29,10 +31,12 @@ public class UnaryOpExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-        throws ExecutionException
+    public Value evaluate(
+            Map<String, FunctionDecl> funcMap,
+            Map<String, Value> varAndParamMap,
+            Stack<ScopeEnvironment> callStack) throws ExecutionException
     {
-        Value rightVal = this.rightExpr.evaluate(funcMap, varAndParamMap);
+        Value rightVal = this.rightExpr.evaluate(funcMap, varAndParamMap, callStack);
 
         if (this.operator.equals("not"))
         {

@@ -1,12 +1,14 @@
 package splat.parser.elements;
 
 import java.util.Map;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.ExecutionException;
 import splat.executor.ReturnFromCall;
 import splat.executor.Value;
+import splat.executor.ScopeEnvironment;
 
 public abstract class Statement extends ASTElement {
 
@@ -38,8 +40,87 @@ public abstract class Statement extends ASTElement {
 	 * updating the varAndParamMap.  Both of the given maps may be needed for 
 	 * evaluating any sub-expressions in the statement.
 	 */
-    public abstract void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-            throws ReturnFromCall, ExecutionException;
+    public abstract void execute(
+        Map<String, FunctionDecl> funcMap, 
+        Map<String, Value> varAndParamMap, 
+        Stack<ScopeEnvironment> callStack
+    ) throws ReturnFromCall, ExecutionException;
+
+    public Value getVarVal(String label, Stack<ScopeEnvironment> callStack, Map<String, Value> progVarMap)
+        throws ExecutionException
+    {
+        Value varVal = null;
+
+        if (callStack.empty())
+        {
+            varVal = progVarMap.get(label);
+        }
+        else
+        {
+            varVal = callStack.peek().getLocalVarAndParamMap().get(label);
+
+            if (varVal == null)
+            {
+                varVal = progVarMap.get(label);
+            }
+        }
+
+        if (varVal == null) // variable with the label doesn't exist in the program
+        {
+            throw new ExecutionException(
+                "WTF, dude??? Nothing found with the label '" + label + 
+                "'! Your semantic analyzer is FUCKED UP! GO FIX IT!!!",
+                this
+            );
+        }
+
+        return varVal;
+    }
+
+    public void updateVarVal(
+        String label, Value newVal, Stack<ScopeEnvironment> callStack, Map<String, Value> progVarMap
+    ) throws ExecutionException
+    {
+        if (callStack.empty())
+        {
+            if (progVarMap.containsKey(label))
+            {
+                progVarMap.put(label, newVal);
+            }
+            else // variable with the label doesn't exist in the program
+            {
+                throw new ExecutionException(
+                    "Naaaaah, bro, this can't be... No variable found with the label '" + label + 
+                    "' while trying to update the variable value to a new value... Just no words...",
+                    this
+                );
+            }
+        }
+        else
+        {
+            Map<String, Value> localVarAndParamMap = callStack.peek().getLocalVarAndParamMap();
+
+            if (localVarAndParamMap.containsKey(label))
+            {
+                localVarAndParamMap.put(label, newVal);
+            }
+            else
+            {
+                if (progVarMap.containsKey(label))
+                {
+                    progVarMap.put(label, newVal);
+                }
+                else // variable with the label doesn't exist in the program
+                {
+                    throw new ExecutionException(
+                        "Naaaaah, bro, this can't be... No variable found with the label '" + label + 
+                        "' while trying to update the variable value to a new value... Just no words...",
+                        this
+                    );
+                }
+            }
+        }
+    }
 
     public String getFuncLabel() {
         return this.funcLabel;

@@ -1,12 +1,14 @@
 package splat.parser.elements;
 
 import java.util.Map;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.ReturnFromCall;
 import splat.executor.ExecutionException;
 import splat.executor.Value;
+import splat.executor.ScopeEnvironment;
 
 public class LabelAssignmentStatement extends Statement {
     private String label;
@@ -36,8 +38,19 @@ public class LabelAssignmentStatement extends Statement {
     }
 
     @Override
-    public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-        throws ReturnFromCall, ExecutionException
+    public void execute(
+            Map<String, FunctionDecl> funcMap,
+            Map<String, Value> varAndParamMap,
+            Stack<ScopeEnvironment> callStack) throws ExecutionException
+    {
+        this.checkNotFuncLabel(this.label, funcMap);
+        Value varVal = this.getVarVal(this.label, callStack, varAndParamMap);
+        Value newVarVal = this.expr.evaluate(funcMap, varAndParamMap, callStack);
+        this.updateVarVal(this.label, newVarVal, callStack, varAndParamMap);
+    }
+
+    private void checkNotFuncLabel(String label, Map<String, FunctionDecl> funcMap)
+            throws ExecutionException
     {
         FunctionDecl funcDecl = funcMap.get(this.label);
         if (funcDecl != null)
@@ -48,19 +61,6 @@ public class LabelAssignmentStatement extends Statement {
                 this
             );
         }
-
-        Value varVal = varAndParamMap.get(this.label);
-        if (varVal == null)
-        {
-            throw new ExecutionException(
-                "WTF, dude??? Nothing found with the label '" + this.label + 
-                "'! Your semantic analyzer is FUCKED UP! GO FIX IT!!!",
-                this
-            );
-        }
-
-        Value newVarVal = this.expr.evaluate(funcMap, varAndParamMap);
-        varAndParamMap.put(this.label, newVarVal);
     }
 
     public Expression getExpr() {

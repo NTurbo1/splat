@@ -242,9 +242,8 @@ public class  SplatTester {
 			}
 		}
 
-        // UNCOMMENT THIS ONLY FOR DEBUGGING!
-	    // printOutput(progOutput);
-
+        // FOR DEBUGGING ONLY!!! UNCOMMENT OR REMOVE THE LINE BELOW IF YOU DON'T NEED IT!!!
+		// printOutput(progOutput);
 	}
 
 	private boolean outputMatchesExpected(File output, File expected) throws IOException {

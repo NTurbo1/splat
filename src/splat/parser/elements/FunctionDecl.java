@@ -3,6 +3,7 @@ package splat.parser.elements;
 import java.util.List;
 
 import splat.lexer.Token;
+import splat.executor.ExecutionException;
 
 public class FunctionDecl extends Declaration {
 

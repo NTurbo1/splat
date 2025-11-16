@@ -2,6 +2,8 @@ package splat.parser.elements;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
@@ -9,6 +11,7 @@ import splat.executor.Value;
 import splat.executor.ExecutionException;
 import splat.executor.ReturnFromCall;
 import splat.executor.Executor;
+import splat.executor.ScopeEnvironment;
 
 /**
  * A function call expression ::= <label> ( <args> )
@@ -61,8 +64,47 @@ public class LabelArgsExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-        throws ExecutionException
+    public Value evaluate(
+            Map<String, FunctionDecl> funcMap,
+            Map<String, Value> varAndParamMap,
+            Stack<ScopeEnvironment> callStack) throws ExecutionException
+    {
+        FunctionDecl funcDecl = this.getFunctionDecl(funcMap);
+        ScopeEnvironment scopeEnv = this.createFuncScopeEnv();
+        this.addLocalVarsToScopeEnv(funcDecl, scopeEnv);
+        this.addFuncArgsToScopeEnv(funcDecl, funcMap, varAndParamMap, callStack, scopeEnv);
+        callStack.push(scopeEnv);
+
+        List<Statement> funcStmts = funcDecl.getStmts();
+        if (funcStmts != null)
+        {
+            try {
+                for (Statement stmt : funcStmts) {
+                    stmt.execute(funcMap, varAndParamMap, callStack);
+                }
+            } catch (ReturnFromCall rfc) {
+                callStack.pop();
+                return rfc.getReturnVal();
+            }
+        }
+
+        Type funcReturnType = funcDecl.getReturnType();
+        if (funcReturnType == Type.VOID)
+        {
+            // TODO: I think should function call expression should return something, no??? If so, then
+            // you must throw ExecutionException here.
+            callStack.pop();
+            return null;
+        }
+
+        throw new ExecutionException(
+            "Nothing is returned from a function call with return type '" + funcReturnType.toString() +
+            "'! Ehh...", 
+            this
+        );
+    }
+
+    public FunctionDecl getFunctionDecl(Map<String, FunctionDecl> funcMap) throws ExecutionException
     {
         FunctionDecl funcDecl = funcMap.get(this.label);
         if (funcDecl == null)
@@ -73,44 +115,54 @@ public class LabelArgsExpression extends Expression {
             );
         }
 
+        return funcDecl;
+    }
+
+    private ScopeEnvironment createFuncScopeEnv()
+    {
+        Map<String, Value> localVarAndParamMap = new HashMap<>();
+        ScopeEnvironment scopeEnv = new ScopeEnvironment(localVarAndParamMap);
+
+        return scopeEnv;
+    }
+
+    private void addLocalVarsToScopeEnv(
+        FunctionDecl funcDecl, ScopeEnvironment scopeEnv
+    ) throws ExecutionException 
+    {
+        List<VariableDecl> localVarDecls = funcDecl.getLocalVarDecls();
+
+        if (localVarDecls != null)
+        {
+            for (VariableDecl varDecl : localVarDecls)
+            {
+                Value varVal = Executor.returnZeroValueOf(varDecl);
+                scopeEnv
+                    .getLocalVarAndParamMap()
+                    .put(varDecl.getLabel(), varVal);
+            }
+        }
+    }
+
+    private void addFuncArgsToScopeEnv(
+        FunctionDecl funcDecl, Map<String, 
+        FunctionDecl> funcMap, 
+        Map<String, Value> varAndParamMap,
+        Stack<ScopeEnvironment> callStack,
+        ScopeEnvironment scopeEnv) throws ExecutionException
+    {
         List<FuncParamDecl> funcParams = funcDecl.getParams();
+
         if (funcParams != null)
         {
-            // Add function arguments to the varAndParamMap so that they're accessible to the statements
-            // and expressions in the function body. We'll remove them later before returning from a 
-            // function. 
             for (int i = 0; i < funcParams.size(); i++)
             {
-                Value argVal = this.args.get(i).evaluate(funcMap, varAndParamMap);
-                varAndParamMap.put(funcParams.get(i).getLabel(), argVal);
+                Value argVal = this.args.get(i).evaluate(funcMap, varAndParamMap, callStack);
+                scopeEnv
+                    .getLocalVarAndParamMap()
+                    .put(funcParams.get(i).getLabel(), argVal);
             }
         }
-
-        List<Statement> funcStmts = funcDecl.getStmts();
-        if (funcStmts != null)
-        {
-            try {
-                for (Statement stmt : funcStmts) {
-                    stmt.execute(funcMap, varAndParamMap);
-                }
-            } catch (ReturnFromCall rfc) {
-                return rfc.getReturnVal();
-            }
-        }
-
-        Executor.removeFuncArgsAndLocalVarsFrom(varAndParamMap, funcDecl);
-
-        Type funcReturnType = funcDecl.getReturnType();
-        if (funcReturnType == Type.VOID)
-        {
-            return null;
-        }
-
-        throw new ExecutionException(
-            "Nothing is returned from a function call with return type '" + funcReturnType.toString() +
-            "'! Ehh...", 
-            this
-        );
     }
 
     public List<Expression> getArgs() {

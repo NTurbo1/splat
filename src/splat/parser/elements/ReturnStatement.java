@@ -1,12 +1,14 @@
 package splat.parser.elements;
 
 import java.util.Map;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.ReturnFromCall;
 import splat.executor.ExecutionException;
 import splat.executor.Value;
+import splat.executor.ScopeEnvironment;
 
 public class ReturnStatement extends Statement {
     private Expression expr;
@@ -61,17 +63,12 @@ public class ReturnStatement extends Statement {
     }
 
     @Override
-    public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-        throws ReturnFromCall, ExecutionException
+    public void execute(
+            Map<String, FunctionDecl> funcMap,
+            Map<String, Value> varAndParamMap,
+            Stack<ScopeEnvironment> callStack) throws ReturnFromCall, ExecutionException
     {
-        FunctionDecl funcDecl = funcMap.get(this.getFuncLabel());
-        if (funcDecl == null) 
-        {
-            throw new ExecutionException(
-                "Outside function return statement is detected! Or your semantic analyzer is FUCKED UP!", 
-                this
-            );
-        }
+        FunctionDecl funcDecl = this.getFuncDecl(funcMap);
 
         Type funcReturnType = funcDecl.getReturnType();
         if (funcReturnType == null)
@@ -85,7 +82,7 @@ public class ReturnStatement extends Statement {
         Value returnVal = null;
         Type returnExprType = Type.VOID;
         if (this.expr != null) {
-            returnVal = this.expr.evaluate(funcMap, varAndParamMap);
+            returnVal = this.expr.evaluate(funcMap, varAndParamMap, callStack);
             returnExprType = returnVal.getType();
         }
 
@@ -99,6 +96,21 @@ public class ReturnStatement extends Statement {
         }
 
         throw new ReturnFromCall(returnVal);
+    }
+
+    private FunctionDecl getFuncDecl(Map<String, FunctionDecl> funcMap) throws ExecutionException
+    {
+        FunctionDecl funcDecl = funcMap.get(this.getFuncLabel());
+
+        if (funcDecl == null) 
+        {
+            throw new ExecutionException(
+                "Outside function return statement is detected! Or your semantic analyzer is FUCKED UP!", 
+                this
+            );
+        }
+
+        return funcDecl;
     }
 
     public Expression getExpr() {

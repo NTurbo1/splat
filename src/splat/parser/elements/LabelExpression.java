@@ -1,11 +1,13 @@
 package splat.parser.elements;
 
 import java.util.Map;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
 import splat.executor.Value;
 import splat.executor.ExecutionException;
+import splat.executor.ScopeEnvironment;
 
 public class LabelExpression extends Expression {
     private String value;
@@ -28,19 +30,12 @@ public class LabelExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-        throws ExecutionException
+    public Value evaluate(
+            Map<String, FunctionDecl> funcMap,
+            Map<String, Value> varAndParamMap,
+            Stack<ScopeEnvironment> callStack) throws ExecutionException
     {
-        Value value = varAndParamMap.get(this.value);
-        if (value == null) {
-            throw new ExecutionException(
-                "Undefined variable detected during execution: " + this.value + 
-                ". Sigh... go check your semantic analyzer, alright?! Just check it...",
-                this
-            );
-        }
-
-        return value;
+        return this.getVarVal(this.value, callStack, varAndParamMap);
     }
 
     public String getValue() {

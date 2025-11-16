@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.parser.ParseException;
@@ -14,6 +15,7 @@ import splat.executor.StringValue;
 import splat.executor.IntegerValue;
 import splat.executor.BoolValue;
 import splat.executor.ExecutionException;
+import splat.executor.ScopeEnvironment;
 
 public class Literal extends Expression {
     private Type type;
@@ -49,8 +51,10 @@ public class Literal extends Expression {
     }
 
     @Override
-    public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-        throws ExecutionException
+    public Value evaluate(
+            Map<String, FunctionDecl> funcMap,
+            Map<String, Value> varAndParamMap,
+            Stack<ScopeEnvironment> callStack) throws ExecutionException
     {
         switch (this.type)
         {

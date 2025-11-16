@@ -1,6 +1,7 @@
 package splat.parser.elements;
 
 import java.util.Map;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.lang.Operations;
@@ -10,6 +11,7 @@ import splat.executor.BoolValue;
 import splat.executor.StringValue;
 import splat.executor.IntegerValue;
 import splat.executor.ExecutionException;
+import splat.executor.ScopeEnvironment;
 
 public class BinaryOpExpression extends Expression {
     private Expression leftExpr;
@@ -34,11 +36,13 @@ public class BinaryOpExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-        throws ExecutionException
+    public Value evaluate(
+        Map<String, FunctionDecl> funcMap,
+        Map<String, Value> varAndParamMap,
+        Stack<ScopeEnvironment> callStack) throws ExecutionException
     {
-        Value leftVal = this.leftExpr.evaluate(funcMap, varAndParamMap);
-        Value rightVal = this.rightExpr.evaluate(funcMap, varAndParamMap);
+        Value leftVal = this.leftExpr.evaluate(funcMap, varAndParamMap, callStack);
+        Value rightVal = this.rightExpr.evaluate(funcMap, varAndParamMap, callStack);
 
         if (Operations.ARITHMETIC_OPERATORS.contains(this.operator))
         {

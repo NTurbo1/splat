@@ -1,7 +1,9 @@
 package splat.parser.elements;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
@@ -9,6 +11,7 @@ import splat.executor.Value;
 import splat.executor.BoolValue;
 import splat.executor.ReturnFromCall;
 import splat.executor.ExecutionException;
+import splat.executor.ScopeEnvironment;
 
 public class IfElseStatement extends Statement {
     private Expression expr;
@@ -84,9 +87,6 @@ public class IfElseStatement extends Statement {
         //
         // We don't care if the function has void return type.
         if (funcMustReturn && (ifStmtReturns != elseStmtReturns)) {
-            System.out.println("funcMustReturn: " + funcMustReturn);
-            System.out.println("ifStmtReturns: " + ifStmtReturns);
-            System.out.println("elseStmtReturns: " + elseStmtReturns);
             throw new SemanticAnalysisException(
                     "Missing a return statement inside the if-else construct.", this);
         }
@@ -95,10 +95,12 @@ public class IfElseStatement extends Statement {
     }
 
     @Override
-    public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-        throws ReturnFromCall, ExecutionException
+    public void execute(
+            Map<String, FunctionDecl> funcMap, 
+            Map<String, Value> varAndParamMap,
+            Stack<ScopeEnvironment> callStack) throws ReturnFromCall, ExecutionException
     {
-        Value exprValue = this.expr.evaluate(funcMap, varAndParamMap);
+        Value exprValue = this.expr.evaluate(funcMap, varAndParamMap, callStack);
         Type exprValType = exprValue.getType();
         if (exprValType != Type.BOOLEAN) 
         {
@@ -115,7 +117,7 @@ public class IfElseStatement extends Statement {
             }
             for (Statement stmt : this.stmts)
             {
-                stmt.execute(funcMap, varAndParamMap);
+                stmt.execute(funcMap, varAndParamMap, callStack);
             }
         } else {
             if (this.elseStmts == null) {
@@ -123,7 +125,7 @@ public class IfElseStatement extends Statement {
             }
             for (Statement stmt : this.elseStmts)
             {
-                stmt.execute(funcMap, varAndParamMap);
+                stmt.execute(funcMap, varAndParamMap, callStack);
             }
         }
     }

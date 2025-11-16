@@ -1,6 +1,7 @@
 package splat.parser.elements;
 
 import java.util.Map;
+import java.util.Stack;
 
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
@@ -10,6 +11,7 @@ import splat.executor.Value;
 import splat.executor.StringValue;
 import splat.executor.IntegerValue;
 import splat.executor.BoolValue;
+import splat.executor.ScopeEnvironment;
 
 public class PrintStatement extends Statement {
     private Expression expr;
@@ -30,10 +32,12 @@ public class PrintStatement extends Statement {
     }
 
     @Override
-    public void execute(Map<String, FunctionDecl> funcMap, Map<String, Value> varAndParamMap)
-        throws ReturnFromCall, ExecutionException
+    public void execute(
+            Map<String, FunctionDecl> funcMap,
+            Map<String, Value> varAndParamMap,
+            Stack<ScopeEnvironment> callStack) throws ReturnFromCall, ExecutionException
     {
-        Value val = this.expr.evaluate(funcMap, varAndParamMap);
+        Value val = this.expr.evaluate(funcMap, varAndParamMap, callStack);
         Type valType = val.getType();
         if (valType == Type.STRING)
         {

@@ -3,6 +3,7 @@ package splat.executor;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 import splat.parser.elements.FunctionDecl;
 import splat.parser.elements.FuncParamDecl;
@@ -18,6 +19,7 @@ public class Executor {
 	
 	private Map<String, FunctionDecl> funcMap;
 	private Map<String, Value> progVarMap;
+    private Stack<ScopeEnvironment> callStack;
 	
 	public Executor(ProgramAST progAST) {
 		this.progAST = progAST;
@@ -28,12 +30,13 @@ public class Executor {
 		// This sets the maps that will be needed for executing function 
 		// calls and storing the values of the program variables
 		setMaps();
+        this.callStack = new Stack<>();
 		
 		try {
 			
 			// Go through and execute each of the statements
 			for (Statement stmt : progAST.getStmts()) {
-				stmt.execute(funcMap, progVarMap);
+				stmt.execute(funcMap, progVarMap, callStack);
 			}
 			
 		// We should never have to catch this exception here, since the
@@ -42,6 +45,9 @@ public class Executor {
 			System.out.println("Internal error!!! The main program body "
 					+ "cannot have a return statement -- this should have "
 					+ "been caught during semantic analysis!");
+
+            // FOR DEBUGGING ONLY!!! REMOVE IT IF YOU DON'T NEED IT!!!
+            ex.printStackTrace();
 			
 			throw new ExecutionException("Internal error -- fix your "
 					+ "semantic analyzer!", -1, -1);
